@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>P2P</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="container">
+
+        <div class="sidebar" id="left-sidebar">
+            <h2 id="title">Ping 2 Pong</h2>
+
+            <div class="panel">
+                <p class="text-title">ĐIỂM</p>
+                <span class="text-title" id="score">0</span>
+            </div>
+
+            <div class="panel">
+                <p class="text-title">THỜI GIAN</p>
+                <span class="text-title" id="lives">00:00</span>
+            </div>
+        </div>
+
+        <div id="main">
+            <div id="bricks"></div>
+            <div id="paddle"></div>
+            <div id="ball"></div>
+        </div>
+
+        <div class="sidebar" id="right-sidebar">
+            <div class="panel">
+                <p class="text-title">MÀN CHƠI</p>
+                <div id="level-panel">
+                    <button class="level">1</button>
+                    <button class="level">2</button>
+                    <button class="level">3</button>
+                    <button class="level">4</button>
+                    <button class="level">5</button>
+                    <button class="level">6</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <button id="btn-pause">Tạm dừng</button>
+                <button id="btn-restart">Chơi lại</button>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <script src="index.js"></script>
+</body>
+</html>
