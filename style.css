@@ -26,6 +26,26 @@ body {
     border-radius: 10px;
 }
 
+.brick, #paddle, #ball {
+    position: absolute;
+}
+
+#paddle{
+    background-color: #E8B895E6;
+    border-radius: 6px;
+}
+
+#ball {
+    background-color: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #ffffff;
+}
+
+.brick {
+    border-radius: 4px;
+    box-shadow: inset -2px -2px 5px rgba(0,0,0,0.3);
+}
+
 .sidebar {
     width: 160px;
     height: 100%;
