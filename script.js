@@ -7,7 +7,7 @@ const overlay = document.getElementById("overlay")
 const boardWidth = gameBoard.clientWidth;
 const boardHeight = gameBoard.clientHeight;
 
-const paddleWidth = 120;
+let paddleWidth = 120;
 const paddleHeight = 12;
 let paddleX = (boardWidth - paddleWidth) / 2;
 
@@ -15,6 +15,10 @@ const ballSize = 14;
 let balls = [];
 let items = [];
 const itemSize = 20;
+
+let effectTimer = null;
+let effectTimeLeft = 0;
+const timeDisplay = document.getElementById("lives");
 
 let isPlay = false;
 
@@ -33,12 +37,28 @@ const levels = [
         [2, 1, 1, 1, 1, 1, 1, 2],
         [2, 2, 2, 0, 0, 2, 2, 2]],
 
+        [[2, 1, 1, 1, 1, 1, 1, 2],
+        [2, 1, 1, 1, 1, 1, 1, 2],
+        [2, 2, 1, 1, 1, 1, 2, 2],
+        [2, 2, 1, 1, 1, 1, 2, 2],
+        [3, 3, 3, 2, 2, 3, 3, 3],
+        [0, 0, 0, 3, 3, 0, 0, 0]],
+
         [[3, 3, 3, 3, 3, 3, 3, 3],
-        [2, 2, 1, 1, 1, 1, 2, 2],
-        [2, 2, 1, 1, 1, 1, 2, 2],
-        [2, 2, 1, 1, 1, 1, 2, 2],
-        [2, 2, 2, 1, 1, 2, 2, 2],
-        [3, 3, 3, 2, 2, 3, 3, 3]]
+        [3, 2, 2, 2, 2, 2, 2, 3],
+        [3, 2, 1, 1, 1, 1, 2, 3],
+        [3, 2, 1, 1, 1, 1, 2, 3],
+        [3, 2, 2, 2, 2, 2, 2, 3],
+        [3, 3, 3, 3, 3, 3, 3, 3]],
+
+        [[0, 0, 3, 3, 3, 3, 0, 0],
+        [0, 2, 2, 2, 2, 2, 2, 0],
+        [3, 2, 3, 3, 3, 3, 2, 3],
+        [3, 2, 3, 2, 2, 3, 2, 3],
+        [3, 2, 3, 2, 2, 3, 2, 3],
+        [3, 2, 3, 3, 3, 3, 2, 3],
+        [0, 2, 2, 2, 2, 2, 2, 0],
+        [0, 0, 3, 3, 3, 3, 0, 0]]
 ]
 
 const brickWidth = 70;
@@ -52,6 +72,44 @@ let totalBricks = 0;
 let brokenBricks = 0;
 
 const levelButtons = document.querySelectorAll(".level");
+
+function applyYellowEffect() {
+    paddleWidth = 70;
+    effectTimeLeft = 10;
+    updateTimerDisplay();
+
+    if (effectTimer) clearInterval(effectTimer);
+
+    effectTimer = setInterval(() => {
+        effectTimeLeft--;
+        updateTimerDisplay();
+
+        if (effectTimeLeft <= 0) {
+            clearEffects();
+        }
+    }, 1000);
+}
+
+function clearEffects() {
+    if (effectTimer) clearInterval(effectTimer);
+    effectTimer = null;
+    effectTimeLeft = 0;
+    updateTimerDisplay();
+    paddleWidth = 120;
+
+    if (paddleX + paddleWidth > boardWidth) {
+        paddleX = boardWidth - paddleWidth;
+    }
+}
+
+function updateTimerDisplay() {
+    if (effectTimeLeft > 0) {
+        let seconds = effectTimeLeft < 10 ? "0" + effectTimeLeft : effectTimeLeft;
+        timeDisplay.innerText = "00:" + seconds;
+    } else {
+        timeDisplay.innerText = "00:00";
+    }
+}
 
 function spawnBalls() {
     let baseBall = balls[0];
@@ -70,17 +128,44 @@ function spawnBalls() {
 }
 
 function spawnItem(x, y) {
-    if (currentLevel > 0 && Math.random() < 0.3) {
+    if (currentLevel === 0) return;
+    if (Math.random() > 0.30) return;
+    let rand = Math.random();
+    let type = null;
+    let color = null;
+
+    if (currentLevel > 2) {
+        if (rand < 0.20) {
+            type = "red"; color = "red";
+        } else if (rand < 0.50) {
+            type = "yellow"; color = "yellow";
+        } else {
+            type = "green"; color = "green";
+        }
+    }
+    else if (currentLevel > 1) {
+        if (rand < 0.40) {
+            type = "yellow"; color = "yellow";
+        } else {
+            type = "green"; color = "green";
+        }
+    }
+    else {
+        type = "green"; color = "green";
+    }
+
+    if (type) {
         let itemEl = document.createElement("div");
         itemEl.classList.add("item");
         itemEl.style.width = itemSize + "px";
         itemEl.style.height = itemSize + "px";
-        itemEl.style.backgroundColor = "yellow";
+        itemEl.style.backgroundColor = color;
         itemEl.style.position = "absolute";
         itemEl.style.borderRadius = "50%";
+        itemEl.style.boxShadow = `0 0 8px ${color}`
         gameBoard.appendChild(itemEl);
 
-        items.push({ x: x + brickWidth / 2, y: y, dy: 3, element: itemEl });
+        items.push({ x: x + brickWidth / 2, y: y, dy: 3, type: type, element: itemEl });
     }
 }
 
@@ -134,15 +219,26 @@ function initBricks() {
 
 function loadLevels(index) {
     currentLevel = index;
-    balls.forEach((b, index) => { if (index > 0) b.element.remove(); });
+
+    balls.forEach(b => b.element.remove());
     items.forEach(item => item.element.remove());
-    balls = [{
-        element: document.getElementById("ball"),
-        x: (boardWidth - ballSize) / 2, y: 350, dx: 4, dy: -4
-    }];
+
+    let ball = document.createElement("div");
+    ball.id = "ball";
+    gameBoard.appendChild(ball);
+
+    paddleX = (boardWidth - 120) / 2;
+
+    let startX = (boardWidth - ballSize) / 2;
+    let startY = boardHeight - 50 - paddleHeight - ballSize - 2;
+
+    balls = [{element: ball, x: startX, y: startY, dx: 4, dy: -4}];
+
     items = [];
     isPlay = false;
     overlay.style.display = "flex";
+
+    clearEffects();
     initBricks();
 }
 
@@ -167,7 +263,10 @@ gameBoard.addEventListener("click", (e) => {
         }
     });
 
-
+function gameOver() {
+    alert("Game Over");
+    document.location.reload();
+}
 
 function loop() {
 
@@ -185,12 +284,11 @@ function loop() {
                 balls.splice(index, 1);
 
                 if (balls.length === 0) {
-                    alert("Game Over");
-                    document.location.reload();
+                    gameOver();
                 }
             }
             //va cham giua, trai, phai cua paddle
-            if(ball.y + ballSize >= boardHeight - paddleHeight - 50 && ball.x + ballSize >= paddleX && ball.x <= paddleX + paddleWidth) {
+            if(ball.y + ballSize >= boardHeight - paddleHeight - 50 && ball.y <= boardHeight - 50 && ball.x + ballSize >= paddleX && ball.x <= paddleX + paddleWidth) {
                 let paddleCenter = paddleX + paddleWidth / 2;
                 let ballCenter = ball.x + ballSize / 2;
                 let hitPoint = (ballCenter - paddleCenter) / (paddleWidth / 2);
@@ -234,9 +332,15 @@ function loop() {
             item.y += item.dy;
             item.element.style.left = item.x + 'px';
             item.element.style.top = item.y + 'px';
-
-            if (item.y + itemSize >= boardHeight - paddleHeight - 50 && item.x + itemSize >= paddleX && item.x <= paddleX + paddleWidth) {
-                spawnBalls();
+            //kiem tra va cham voi paddle
+            if (item.y + itemSize >= boardHeight - paddleHeight - 50 && item.y <= boardHeight - 50 && item.x + itemSize >= paddleX && item.x <= paddleX + paddleWidth) {
+                if(item.type === "green") {
+                    spawnBalls();
+                } else if (item.type === "red") {
+                    gameOver();
+                } else if (item.type === "yellow") {
+                    applyYellowEffect();
+                }
                 item.element.remove();
                 items.splice(index, 1);
             }
