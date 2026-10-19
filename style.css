@@ -94,7 +94,23 @@ body {
     text-align: center;
     border: 1px solid white;
 }
+#effects-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 10px;
+}
 
+.effect-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: white;
+    font-weight: bold;
+    padding: 6px;
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.3);
+}
 #right-sidebar {
     margin-top: 30%;
 }
