@@ -561,7 +561,7 @@ function loop() {
                                         br.bossHp = 10;
                                         br.element.style.border = "none"
                                     }
-                                    br.bossHp--;
+                                    br.bossHp -= 2;
 
                                     if (br.bossHp <= 0) {
                                         br.color = 0;
