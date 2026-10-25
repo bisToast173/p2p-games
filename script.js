@@ -257,13 +257,16 @@ function updateTimerDisplay() {
         }
 
         else if (currentLevel >= 4) {
-            if (rand < 0.15) {
+            if (rand < 0.2) {
                 type = "red";
                 color = "red";
-            } else if (rand < 0.35) {
+            } else if (rand < 0.4) {
+                type = "purple";
+                color = "purple";
+            } else if (rand < 0.6) {
                 type = "gray";
                 color = "#808080";
-            } else if (rand < 0.65) {
+            } else if (rand < 0.8) {
                 type = "yellow";
                 color = "yellow";
             } else {
